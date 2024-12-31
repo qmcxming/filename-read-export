@@ -1,7 +1,7 @@
-<script lang="ts" setup>
+<script lang="js" setup>
 import { ref, computed } from 'vue';
 
-const formRef = ref<FormInstance>();
+const formRef = ref();
 const form = ref({
   folder: '',
   str: '-',
@@ -10,7 +10,7 @@ const form = ref({
 });
 
 // 打开文件夹函数
-const openFolder = (ft: string) => {
+const openFolder = (ft) => {
   const folders = window.utools.showOpenDialog({
     title: '选择文件夹',
     canSelectFolders: true,
@@ -22,7 +22,7 @@ const openFolder = (ft: string) => {
   }
 };
 
-const showMessage = (message: string, type: string) => {
+const showMessage = (message, type) => {
   ElMessage({
     message: message,
     type: type,
@@ -31,7 +31,7 @@ const showMessage = (message: string, type: string) => {
 }
 
 // 导出 Excel 函数
-const submitForm = (formEl: FormInstance | undefined) => {
+const submitForm = (formEl) => {
   if (!formEl) return;
   formEl.validate((valid) => {
     if (valid) {
@@ -60,7 +60,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
   });
 };
 
-const resetForm = (formEl: FormInstance | undefined) => {
+const resetForm = (formEl) => {
   if (!formEl) return;
   formEl.resetFields();
   tableData.value = [];

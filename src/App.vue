@@ -9,6 +9,7 @@ onMounted(() => {
   window.utools.onPluginEnter((action) => {
     route.value = action.code
     enterAction.value = action
+    document.documentElement.className = window.utools.isDarkColors() ? "dark" : "";
   })
   window.utools.onPluginOut((isKill) => {
     route.value = ''
