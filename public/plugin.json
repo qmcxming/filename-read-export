@@ -1,0 +1,18 @@
+{
+  "main": "index.html",
+  "preload": "preload/services.js",
+  "logo": "logo.png",
+  "development": {
+    "main": "http://localhost:5173"
+  },
+  "features": [
+    {
+      "code": "fileNameExport",
+      "explain": "读取目录中的所有文件名并导出为Excel文件",
+      "cmds": [
+        "文件名读取导出",
+        "fileNameExport"
+      ]
+    }
+  ]
+}
