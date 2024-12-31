@@ -50,7 +50,7 @@ const submitForm = (formEl) => {
         let msg = '导出失败';
         if (error.message.includes('EBUSY: resource busy or locked,')) {
           msg = `文件被占用，请关闭【${fileName}.xlsx】文件后重试`;
-        } 
+        }
         showMessage(msg, 'error');
         console.log(error);
       }
@@ -96,6 +96,16 @@ const maxColumns = computed(() => {
   });
   return Math.max(...l);
 });
+
+const openLocalFolder = (path) => {
+  if (!path) {
+    return showMessage('没有选择文件夹 (￣┰￣*)', 'error');
+  }
+  if (!window.services.fileExist(path)) {
+    return showMessage('文件不存在/没有导出 (⊙_⊙)？', 'error');
+  }
+  window.utools.shellShowItemInFolder(path);
+}
 </script>
 
 <template>
@@ -112,7 +122,17 @@ const maxColumns = computed(() => {
           autocomplete="off"
           placeholder="选择目标文件夹"
           @click="openFolder('from')"
-        />
+        >
+          <template #append>
+            <div
+              class="ipt-suffix"
+              title="打开文件夹"
+              @click="openLocalFolder(form.folder)"
+            >
+              🗂️
+            </div>
+          </template>
+        </el-input>
       </el-form-item>
       <el-form-item label="分割字符" prop="str">
         <el-input
@@ -133,7 +153,17 @@ const maxColumns = computed(() => {
           autocomplete="off"
           placeholder="选择输出文件夹"
           @click="openFolder('to')"
-        />
+        >
+          <template #append>
+            <div
+              class="ipt-suffix"
+              title="打开文件夹"
+              @click="openLocalFolder(form.outputFolder)"
+            >
+              🗂️
+            </div>
+          </template>
+        </el-input>
       </el-form-item>
       <el-form-item
         label="文件名称"
@@ -145,7 +175,17 @@ const maxColumns = computed(() => {
           type="text"
           autocomplete="off"
           placeholder="请输入导出的文件名称"
-        />
+        >
+        <template #append>
+            <div
+              class="ipt-suffix"
+              title="打开文件"
+              @click="openLocalFolder(form.outputFolder + '\\' + form.fileName + '.xlsx')"
+            >
+              🗂️
+            </div>
+          </template>
+        </el-input>
       </el-form-item>
       <div class="btns">
         <el-button type="primary" @click="submitForm(formRef)"
@@ -164,7 +204,7 @@ const maxColumns = computed(() => {
       style="width: 100%; margin-top: 10px"
     >
       <el-table-column
-        v-for="(item, index) in maxColumns"
+        v-for="(_, index) in maxColumns"
         :key="index"
         :label="`第 ${index + 1} 列`"
         :prop="`${index}`"
@@ -189,5 +229,20 @@ const maxColumns = computed(() => {
 .btns {
   display: flex;
   justify-content: center;
+}
+
+.ipt-suffix {
+  width: 100%;
+  height: 100%;
+  /* background-color: hotpink; */
+  /* 增大点击面积 */
+  padding: 0 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* 使用深度选择器覆盖样式 */
+::v-deep(.el-input-group__append) {
+  padding: 0px;
 }
 </style>

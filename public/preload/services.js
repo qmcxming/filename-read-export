@@ -22,6 +22,9 @@ window.services = {
     fs.writeFileSync(filePath, base64Url.substring(matchs[0].length), { encoding: 'base64' })
     return filePath
   },
+  fileExist(file) {
+    return fs.existsSync(file);
+  },
   // 读取文件夹
   readDir(dir) {
     // 读取目录下的所有文件,返回文件名列表
