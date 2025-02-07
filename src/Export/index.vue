@@ -1,12 +1,16 @@
 <script lang="js" setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
+import Setting from '../Setting/index.vue';
+import { getSetting, setSetting } from '../utils/setting';
+
+let setting = getSetting();
 
 const formRef = ref();
 const form = ref({
-  folder: '',
-  str: '-',
-  outputFolder: '',
-  fileName: 'output',
+  folder: setting.target.path,
+  str: setting.split.char,
+  outputFolder: setting.output.path,
+  fileName: setting.name.char,
 });
 
 // 打开文件夹函数
@@ -36,7 +40,10 @@ const submitForm = (formEl) => {
   formEl.validate((valid) => {
     if (valid) {
       const { folder, str, outputFolder, fileName } = form.value;
-      // window.utools.showNotification('导出成功');
+      const loadingInstance = ElLoading.service({
+        lock: true,
+        text: '正在导出，请稍等...',
+      });
       try {
         const flag = window.services.exportExcecl(
           folder,
@@ -45,6 +52,7 @@ const submitForm = (formEl) => {
           fileName
         );
         if (flag) showMessage('导出成功', 'success');
+        if(setting.show) openLocalFolder(outputFolder);
       } catch (error) {
         console.log(error.message);
         let msg = '导出失败';
@@ -53,12 +61,31 @@ const submitForm = (formEl) => {
         }
         showMessage(msg, 'error');
         console.log(error);
+      } finally {
+        loadingInstance.close();
       }
     } else {
       console.log('error submit!');
     }
   });
 };
+
+const handleConfig = () => {
+  if(setting.target.checked) {
+    setting.target.path = form.value.folder;
+  }
+  if(setting.split.checked) {
+    setting.split.char = form.value.str;
+  }
+  if(setting.output.checked) {
+    setting.output.path = form.value.outputFolder;
+  }
+  if(setting.name.checked) {
+    setting.name.char = form.value.name;
+  }
+  setSetting(setting);
+  setting = getSetting();
+}
 
 const resetForm = (formEl) => {
   if (!formEl) return;
@@ -82,8 +109,6 @@ const preview = () => {
   }
 };
 
-form.value.outputFolder = window.utools.getPath('downloads');
-
 // 计算最大列数
 const maxColumns = computed(() => {
   if (tableData.value.length === 0) {
@@ -106,118 +131,141 @@ const openLocalFolder = (path) => {
   }
   window.utools.shellShowItemInFolder(path);
 }
+
+const activeName = ref('first')
+
+const handleClick = (tab, event) => {
+  if(tab.props.label === '操作') {
+    setting = getSetting();// 更新设置
+  }
+}
+
+watch(form.value, () => {
+  handleConfig();
+})
 </script>
 
 <template>
   <div class="container">
-    <el-form ref="formRef" :model="form" label-width="auto">
-      <el-form-item
-        label="选择目录"
-        prop="folder"
-        :rules="[{ required: true, message: '目标文件夹不能为空' }]"
-      >
-        <el-input
-          v-model="form.folder"
-          type="text"
-          autocomplete="off"
-          placeholder="选择目标文件夹"
-          @click="openFolder('from')"
-        >
-          <template #append>
-            <div
-              class="ipt-suffix"
-              title="打开文件夹"
-              @click="openLocalFolder(form.folder)"
+    <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
+      <el-tab-pane label="操作" name="first">
+        <el-form ref="formRef" :model="form" label-width="auto">
+          <el-form-item
+            label="选择目录"
+            prop="folder"
+            :rules="[{ required: true, message: '目标文件夹不能为空' }]"
+          >
+            <el-input
+              v-model="form.folder"
+              type="text"
+              autocomplete="off"
+              placeholder="选择目标文件夹"
+              @click="openFolder('from')"
             >
-              🗂️
-            </div>
-          </template>
-        </el-input>
-      </el-form-item>
-      <el-form-item label="分割字符" prop="str">
-        <el-input
-          v-model="form.str"
-          type="text"
-          autocomplete="off"
-          placeholder="请输入分割字符"
-        />
-      </el-form-item>
-      <el-form-item
-        label="输出目录"
-        prop="outputFolder"
-        :rules="[{ required: true, message: '输出不能为空' }]"
-      >
-        <el-input
-          v-model="form.outputFolder"
-          type="text"
-          autocomplete="off"
-          placeholder="选择输出文件夹"
-          @click="openFolder('to')"
-        >
-          <template #append>
-            <div
-              class="ipt-suffix"
-              title="打开文件夹"
-              @click="openLocalFolder(form.outputFolder)"
+              <template #append>
+                <div
+                  class="ipt-suffix"
+                  title="打开文件夹"
+                  @click="openLocalFolder(form.folder)"
+                >
+                  🗂️
+                </div>
+              </template>
+            </el-input>
+          </el-form-item>
+          <el-form-item label="分割字符" prop="str">
+            <el-input
+              v-model="form.str"
+              type="text"
+              autocomplete="off"
+              placeholder="请输入分割字符"
+            />
+          </el-form-item>
+          <el-form-item
+            label="输出目录"
+            prop="outputFolder"
+            :rules="[{ required: true, message: '输出不能为空' }]"
+          >
+            <el-input
+              v-model="form.outputFolder"
+              type="text"
+              autocomplete="off"
+              placeholder="选择输出文件夹"
+              @click="openFolder('to')"
             >
-              🗂️
-            </div>
-          </template>
-        </el-input>
-      </el-form-item>
-      <el-form-item
-        label="文件名称"
-        prop="fileName"
-        :rules="[{ required: true, message: '导出文件名称不能为空' }]"
-      >
-        <el-input
-          v-model="form.fileName"
-          type="text"
-          autocomplete="off"
-          placeholder="请输入导出的文件名称"
-        >
-        <template #append>
-            <div
-              class="ipt-suffix"
-              title="打开文件"
-              @click="openLocalFolder(form.outputFolder + '\\' + form.fileName + '.xlsx')"
+              <template #append>
+                <div
+                  class="ipt-suffix"
+                  title="打开文件夹"
+                  @click="openLocalFolder(form.outputFolder)"
+                >
+                  🗂️
+                </div>
+              </template>
+            </el-input>
+          </el-form-item>
+          <el-form-item
+            label="文件名称"
+            prop="fileName"
+            :rules="[{ required: true, message: '导出文件名称不能为空' }]"
+          >
+            <el-input
+              v-model="form.fileName"
+              type="text"
+              autocomplete="off"
+              placeholder="请输入导出的文件名称"
             >
-              🗂️
-            </div>
+              <template #append>
+                <div
+                  class="ipt-suffix"
+                  title="打开文件"
+                  @click="
+                    openLocalFolder(
+                      form.outputFolder + '\\' + form.fileName + '.xlsx'
+                    )
+                  "
+                >
+                  🗂️
+                </div>
+              </template>
+            </el-input>
+          </el-form-item>
+          <div class="btns">
+            <el-button type="primary" @click="submitForm(formRef)"
+              >导出Excel</el-button
+            >
+            <el-button @click="resetForm(formRef)">重置</el-button>
+            <el-button @click="preview()" :disabled="!form.folder || !form.str"
+              >预览</el-button
+            >
+          </div>
+        </el-form>
+        <el-table
+          :data="tableData"
+          border
+          height="240"
+          style="width: 100%; margin-top: 10px"
+        >
+          <el-table-column
+            v-for="(_, index) in maxColumns"
+            :key="index"
+            :label="`第 ${index + 1} 列`"
+            :prop="`${index}`"
+            align="center"
+          >
+            <template #default="scope">
+              {{ scope.row[index] }}
+            </template>
+          </el-table-column>
+          <template #empty>
+            <div>[?]~(＾▽＾)~*</div>
           </template>
-        </el-input>
-      </el-form-item>
-      <div class="btns">
-        <el-button type="primary" @click="submitForm(formRef)"
-          >导出Excel</el-button
-        >
-        <el-button @click="resetForm(formRef)">重置</el-button>
-        <el-button @click="preview()" :disabled="!form.folder || !form.str"
-          >预览</el-button
-        >
-      </div>
-    </el-form>
-    <el-table
-      :data="tableData"
-      border
-      height="280"
-      style="width: 100%; margin-top: 10px"
-    >
-      <el-table-column
-        v-for="(_, index) in maxColumns"
-        :key="index"
-        :label="`第 ${index + 1} 列`"
-        :prop="`${index}`"
-        align="center"
-      >
-        <template #default="scope">
-          {{ scope.row[index] }}
-        </template>
-      </el-table-column>
-      <template #empty>
-        <div>[?]~(＾▽＾)~*</div>
-      </template>
-    </el-table>
+        </el-table>
+      </el-tab-pane>
+      <el-tab-pane label="设置" name="second">
+        <Setting />
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
