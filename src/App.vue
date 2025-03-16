@@ -21,6 +21,6 @@ onMounted(() => {
 
 <template>
   <template v-if="route === 'fileNameExport'">
-    <Export></Export>
+    <Export :enterAction="enterAction"></Export>
   </template>
 </template>

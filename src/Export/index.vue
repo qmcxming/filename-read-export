@@ -1,7 +1,20 @@
 <script lang="js" setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import Setting from '../Setting/index.vue';
 import { getSetting, setSetting } from '../utils/setting';
+
+const props = defineProps({
+  enterAction: {
+    type: Object,
+    default: () => ({})
+  }
+})
+
+onMounted(() => {
+  if(props.enterAction.type === 'files') {
+    form.value.folder = props.enterAction.payload[0].path;
+  }
+})
 
 let setting = getSetting();
 
@@ -52,7 +65,7 @@ const submitForm = (formEl) => {
           fileName
         );
         if (flag) showMessage('导出成功', 'success');
-        if(setting.show) openLocalFolder(outputFolder);
+        if(setting.show) openLocalFolder(window.services.joinPath(outputFolder, fileName + '.xlsx'));
       } catch (error) {
         console.log(error.message);
         let msg = '导出失败';

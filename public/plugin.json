@@ -11,7 +11,14 @@
       "explain": "读取目录中的所有文件名并导出为Excel文件",
       "cmds": [
         "文件名读取导出",
-        "fileNameExport"
+        "fileNameExport",
+        {
+          "type": "files",
+          "label": "选择目录",
+          "fileType": "directory",
+          "minLength": 1,
+          "maxLength": 1
+        }
       ]
     }
   ]
