@@ -1,1 +1,5 @@
-import{createApp}from"vue";import"./main.css";import 'element-plus/theme-chalk/dark/css-vars.css';import App from"./App.vue";createApp(App).mount("#app");
+import{createApp}from"vue";
+import "./styles/element/dark.scss";
+import"./main.css";
+import App from"./App.vue";
+createApp(App).mount("#app");

@@ -2,6 +2,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import Setting from '../Setting/index.vue';
 import { getSetting, setSetting } from '../utils/setting';
+import { Download } from '@element-plus/icons-vue';
 
 const props = defineProps({
   enterAction: {
@@ -94,7 +95,7 @@ const handleConfig = () => {
     setting.output.path = form.value.outputFolder;
   }
   if(setting.name.checked) {
-    setting.name.char = form.value.name;
+    setting.name.char = form.value.fileName;
   }
   setSetting(setting);
   setting = getSetting();
@@ -244,20 +245,23 @@ watch(form.value, () => {
             </el-input>
           </el-form-item>
           <div class="btns">
-            <el-button type="primary" @click="submitForm(formRef)"
-              >导出Excel</el-button
-            >
-            <el-button @click="resetForm(formRef)">重置</el-button>
-            <el-button @click="preview()" :disabled="!form.folder || !form.str"
+            <el-button type="primary" @click="submitForm(formRef)">
+              导出
+            </el-button>
+            <el-button
+              plain
+              @click="preview()"
+              :disabled="!form.folder || !form.str"
               >预览</el-button
             >
+            <el-button type="danger" @click="resetForm(formRef)">重置</el-button>
           </div>
         </el-form>
         <el-table
           :data="tableData"
           border
           height="240"
-          style="width: 100%; margin-top: 10px"
+          style="width: 100%; margin-top: 10px;"
         >
           <el-table-column
             v-for="(_, index) in maxColumns"
@@ -284,18 +288,18 @@ watch(form.value, () => {
 
 <style scoped>
 .container {
-  padding: 10px 28px;
+  padding: 0 28px 10px;
 }
 
 .btns {
   display: flex;
   justify-content: center;
+  margin-top: -8px;
 }
 
 .ipt-suffix {
   width: 100%;
   height: 100%;
-  /* background-color: hotpink; */
   /* 增大点击面积 */
   padding: 0 10px;
   border-radius: 4px;
