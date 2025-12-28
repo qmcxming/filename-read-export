@@ -2,7 +2,6 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import Setting from '../Setting/index.vue';
 import { getSetting, setSetting } from '../utils/setting';
-import { Download } from '@element-plus/icons-vue';
 
 const props = defineProps({
   enterAction: {
@@ -33,6 +32,7 @@ const openFolder = (ft) => {
     title: '选择文件夹',
     canSelectFolders: true,
     properties: ['openDirectory'],
+    defaultPath: form.value[ft === 'from' ? 'folder' : 'outputFolder'] || ''
   });
   if (folders) {
     if (ft === 'from') form.value.folder = folders[0];
@@ -59,11 +59,14 @@ const submitForm = (formEl) => {
         text: '正在导出，请稍等...',
       });
       try {
+        // 合并tableData，将[[], []] 转为 ['1', '2', ...]
+        const sourceData = tableData.value.map(row => row.join(str));
         const flag = window.services.exportExcecl(
           folder,
           str,
           outputFolder,
-          fileName
+          fileName,
+          sourceData
         );
         if (flag) showMessage('导出成功', 'success');
         if(setting.show) openLocalFolder(window.services.joinPath(outputFolder, fileName + '.xlsx'));
@@ -116,9 +119,12 @@ const preview = () => {
     return;
   }
   const f = window.services.readDir(form.value.folder);
+  console.log(f);
+  
   // 根据分割字符串分割文件名
   if (f) {
     const files = f.map((item) => item.split(str));
+    console.log(files);
     tableData.value = files;
   }
 };
@@ -147,6 +153,20 @@ const openLocalFolder = (path) => {
 }
 
 const activeName = ref('first')
+
+const handleSort = ({ prop, order }) => {
+  const index = parseInt(prop);
+  if (order === 'ascending') {
+    tableData.value.sort((a, b) => (a[index] || '').localeCompare(b[index] || ''));
+  } else if (order === 'descending') {
+    tableData.value.sort((a, b) => (b[index] || '').localeCompare(a[index] || ''));
+  } else {
+    // 恢复原始顺序
+    if (tableData.value.length > 0) {
+      preview();
+    }
+  }
+};
 
 const handleClick = (tab, event) => {
   if(tab.props.label === '操作') {
@@ -262,6 +282,7 @@ watch(form.value, () => {
           border
           height="240"
           style="width: 100%; margin-top: 10px;"
+          @sort-change="handleSort"
         >
           <el-table-column
             v-for="(_, index) in maxColumns"
@@ -269,6 +290,7 @@ watch(form.value, () => {
             :label="`第 ${index + 1} 列`"
             :prop="`${index}`"
             align="center"
+            sortable
           >
             <template #default="scope">
               {{ scope.row[index] }}

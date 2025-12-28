@@ -34,8 +34,7 @@ window.services = {
     // 读取目录下的所有文件,返回文件名列表
     return fs.readdirSync(dir).map(fileName => path.parse(fileName).name)
   },
-  exportExcecl(dir, splitStr, outputPath, fileName) {
-    const files = fs.readdirSync(dir);
+  exportExcecl(dir, splitStr, outputPath, fileName, files) {
     // 每一行元素最大个数
     let lineMaxCount = 0;
     let maxWidths = [];
