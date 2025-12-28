@@ -8,24 +8,6 @@ window.services = {
   joinPath(...paths) {
     return path.join(...paths)
   },
-  // 读文件
-  readFile(file) {
-    return fs.readFileSync(file, { encoding: 'utf-8' })
-  },
-  // 文本写入到下载目录
-  writeTextFile(text) {
-    const filePath = path.join(window.utools.getPath('downloads'), Date.now().toString() + '.txt')
-    fs.writeFileSync(filePath, text, { encoding: 'utf-8' })
-    return filePath
-  },
-  // 图片写入到下载目录
-  writeImageFile(base64Url) {
-    const matchs = /^data:image\/([a-z]{1,20});base64,/i.exec(base64Url)
-    if (!matchs) return
-    const filePath = path.join(window.utools.getPath('downloads'), Date.now().toString() + '.' + matchs[1])
-    fs.writeFileSync(filePath, base64Url.substring(matchs[0].length), { encoding: 'base64' })
-    return filePath
-  },
   fileExist(file) {
     return fs.existsSync(file);
   },
@@ -34,7 +16,7 @@ window.services = {
     // 读取目录下的所有文件,返回文件名列表
     return fs.readdirSync(dir).map(fileName => path.parse(fileName).name)
   },
-  exportExcecl(dir, splitStr, outputPath, fileName, files) {
+  exportExcecl(splitStr, outputPath, fileName, files) {
     // 每一行元素最大个数
     let lineMaxCount = 0;
     let maxWidths = [];

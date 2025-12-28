@@ -53,7 +53,7 @@ const submitForm = (formEl) => {
   if (!formEl) return;
   formEl.validate((valid) => {
     if (valid) {
-      const { folder, str, outputFolder, fileName } = form.value;
+      const { str, outputFolder, fileName } = form.value;
       const loadingInstance = ElLoading.service({
         lock: true,
         text: '正在导出，请稍等...',
@@ -62,7 +62,6 @@ const submitForm = (formEl) => {
         // 合并tableData，将[[], []] 转为 ['1', '2', ...]
         const sourceData = tableData.value.map(row => row.join(str));
         const flag = window.services.exportExcecl(
-          folder,
           str,
           outputFolder,
           fileName,
@@ -106,7 +105,6 @@ const handleConfig = () => {
 
 const resetForm = (formEl) => {
   if (!formEl) return;
-  formEl.resetFields();
   tableData.value = [];
 };
 
@@ -118,12 +116,13 @@ const preview = () => {
     showMessage('请选择文件夹', 'error');
     return;
   }
-  const f = window.services.readDir(form.value.folder);
+  const f = window.services.readDir(folder);
   console.log(f);
-  
+
   // 根据分割字符串分割文件名
-  if (f) {
-    const files = f.map((item) => item.split(str));
+  if (f && f.length > 0) {
+    // 分割
+    let files = f.map((item) => item.split(str));
     console.log(files);
     tableData.value = files;
   }
@@ -137,6 +136,8 @@ const maxColumns = computed(() => {
   const l = tableData.value.map((row) => {
     if (row) {
       return row.length;
+    } else {
+      return 0;
     }
   });
   return Math.max(...l);
@@ -174,9 +175,9 @@ const handleClick = (tab, event) => {
   }
 }
 
-watch(form.value, () => {
+watch(form, () => {
   handleConfig();
-})
+}, { deep: true });
 </script>
 
 <template>
@@ -274,14 +275,16 @@ watch(form.value, () => {
               :disabled="!form.folder || !form.str"
               >预览</el-button
             >
-            <el-button type="danger" @click="resetForm(formRef)">重置</el-button>
+            <el-button type="danger" @click="resetForm(formRef)"
+              >重置</el-button
+            >
           </div>
         </el-form>
         <el-table
           :data="tableData"
           border
           height="240"
-          style="width: 100%; margin-top: 10px;"
+          style="width: 100%; margin-top: 10px"
           @sort-change="handleSort"
         >
           <el-table-column
